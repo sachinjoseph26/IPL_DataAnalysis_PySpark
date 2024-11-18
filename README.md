@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Data Analysis using Databricks & PySpark
 
 ## Overview
@@ -58,12 +57,4 @@ The project uses cricket-related datasets to perform analysis. Below are the key
 
 ![alt text](image.png)
 
-=======
-# IPL_DataAnalysis_PySpark Using Azure Databricks
 
-## Technologies used:
-    - Azure Databricks
-    - Azure Blob
-    - PySpark
-    - Spark SQL
->>>>>>> 17db889084b257d88e82ce406c498ebdf97b4488
