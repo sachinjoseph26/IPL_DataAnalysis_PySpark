@@ -303,85 +303,65 @@ df_team.createOrReplaceTempView("team")
 
 # COMMAND ----------
 
-# Top scoring batsman in each season
-
-top_scoring_batsmen_per_season = spark.sql("""
-SELECT 
-p.player_name,
-m.season_year,
-SUM(b.runs_scored) AS total_runs 
-FROM ball_by_ball b
-JOIN match m ON b.match_id = m.match_id   
-JOIN player_match pm ON m.match_id = pm.match_id AND b.striker = pm.player_id     
-JOIN player p ON p.player_id = pm.player_id
-GROUP BY p.player_name, m.season_year
-ORDER BY m.season_year, total_runs DESC
-""")
-
-top_scoring_batsmen_per_season.show(30)
+# MAGIC %md
+# MAGIC ## Visualizations using SQL (Can use Spark SQL as well)
 
 # COMMAND ----------
 
-economical_bowlers_powerplay = spark.sql("""
-SELECT 
-p.player_name, 
-AVG(b.runs_scored) AS avg_runs_per_ball, 
-COUNT(b.bowler_wicket) AS total_wickets
-FROM ball_by_ball b
-JOIN player_match pm ON b.match_id = pm.match_id AND b.bowler = pm.player_id
-JOIN player p ON pm.player_id = p.player_id
-WHERE b.over_id <= 6
-GROUP BY p.player_name
-HAVING COUNT(*) >= 1
-ORDER BY avg_runs_per_ball, total_wickets DESC
-""")
-economical_bowlers_powerplay.show()
+# MAGIC %sql
+# MAGIC -- Top scoring batsman in each season
+# MAGIC
+# MAGIC WITH ranked_batsmen AS (
+# MAGIC     SELECT 
+# MAGIC         p.player_name,
+# MAGIC         m.season_year,
+# MAGIC         SUM(b.runs_scored) AS total_runs,
+# MAGIC         RANK() OVER (PARTITION BY m.season_year ORDER BY SUM(b.runs_scored) DESC) AS rank
+# MAGIC     FROM ball_by_ball b
+# MAGIC     JOIN match m ON b.match_id = m.match_id   
+# MAGIC     JOIN player_match pm ON m.match_id = pm.match_id AND b.striker = pm.player_id     
+# MAGIC     JOIN player p ON p.player_id = pm.player_id
+# MAGIC     GROUP BY p.player_name, m.season_year
+# MAGIC )
+# MAGIC SELECT 
+# MAGIC     player_name,
+# MAGIC     season_year,
+# MAGIC     total_runs
+# MAGIC FROM ranked_batsmen
+# MAGIC WHERE rank = 1
+# MAGIC ORDER BY season_year;
+# MAGIC
 
 # COMMAND ----------
 
-toss_impact_individual_matches = spark.sql("""
-SELECT m.match_id, m.toss_winner, m.toss_name, m.match_winner,
-       CASE WHEN m.toss_winner = m.match_winner THEN 'Won' ELSE 'Lost' END AS match_outcome
-FROM match m
-WHERE m.toss_name IS NOT NULL
-ORDER BY m.match_id
-""")
-toss_impact_individual_matches.show()
+# MAGIC %sql
+# MAGIC -- economical_bowlers_powerplay
+# MAGIC SELECT 
+# MAGIC p.player_name, 
+# MAGIC AVG(b.runs_scored) AS avg_runs_per_ball, 
+# MAGIC COUNT(b.bowler_wicket) AS total_wickets
+# MAGIC FROM ball_by_ball b
+# MAGIC JOIN player_match pm ON b.match_id = pm.match_id AND b.bowler = pm.player_id
+# MAGIC JOIN player p ON pm.player_id = p.player_id
+# MAGIC WHERE b.over_id <= 6
+# MAGIC GROUP BY p.player_name
+# MAGIC HAVING COUNT(*) >= 1
+# MAGIC ORDER BY avg_runs_per_ball, total_wickets DESC
+# MAGIC LIMIT 10
+# MAGIC
 
 # COMMAND ----------
 
-
-import matplotlib.pyplot as plt
-
-import seaborn as sns
-economical_bowlers_pd = economical_bowlers_powerplay.toPandas()
-
-# Visualizing using Matplotlib
-plt.figure(figsize=(12, 8))
-# Limiting to top 10 for clarity in the plot
-top_economical_bowlers = economical_bowlers_pd.nsmallest(10, 'avg_runs_per_ball')
-plt.bar(top_economical_bowlers['player_name'], top_economical_bowlers['avg_runs_per_ball'], color='skyblue')
-plt.xlabel('Bowler Name')
-plt.ylabel('Average Runs per Ball')
-plt.title('Most Economical Bowlers in Powerplay Overs (Top 10)')
-plt.xticks(rotation=45)
-plt.tight_layout()
-plt.show()
-
-# COMMAND ----------
-
-toss_impact_pd = toss_impact_individual_matches.toPandas()
-
-# Creating a countplot to show win/loss after winning toss
-plt.figure(figsize=(10, 6))
-sns.countplot(x='toss_winner', hue='match_outcome', data=toss_impact_pd)
-plt.title('Impact of Winning Toss on Match Outcomes')
-plt.xlabel('Toss Winner')
-plt.ylabel('Number of Matches')
-plt.legend(title='Match Outcome')
-plt.xticks(rotation=45)
-plt.tight_layout()
-plt.show()
+# MAGIC %sql
+# MAGIC -- toss_impact_individual_matches 
+# MAGIC
+# MAGIC SELECT m.match_id, m.toss_winner, m.toss_name, m.match_winner,
+# MAGIC        CASE WHEN m.toss_winner = m.match_winner THEN 'Won' ELSE 'Lost' END AS match_outcome
+# MAGIC FROM match m
+# MAGIC WHERE m.toss_name IS NOT NULL
+# MAGIC ORDER BY m.match_id
+# MAGIC
+# MAGIC
 
 # COMMAND ----------
 
