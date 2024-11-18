@@ -1,13 +1,18 @@
 # Data Analysis using Databricks & PySpark
 
 ## Overview
-This project demonstrates how to perform **data analysis** using **Databricks** and **PySpark**. It covers key steps including loading, transforming, and analyzing data stored in various file formats. The project leverages PySpark's distributed computing capabilities and Databricks' collaborative environment to analyze large datasets efficiently.
+This project demonstrates how to perform **data analysis** using **Databricks** and **PySpark**. It covers key steps including loading, transforming, and analyzing data stored in various file formats. This project leverages **Azure Databricks** and **Azure Storage Services** for distributed data processing and storage. Azure Databricks provides a collaborative environment for running PySpark workloads, while Azure Storage is used to store datasets like `ball_by_ball`, `match`, `player`, and other cricket-related data.
 
 ---
-## Tools covered:
-- Azure Databricks
-- PySpark
-- Spark SQL
+### Features of the Infrastructure:
+1. **Azure Databricks**:
+   - Collaborative environment for running PySpark.
+   - High-performance data analysis with Spark clusters.
+2. **Azure Storage Services**:
+   - Datasets are securely stored in Azure Blob Storage.
+   - Optimized for scalable and reliable data access.
+
+   
 ## Features
 1. **Data Loading**: Loading structured and semi-structured data (e.g., CSV, JSON, Parquet) into PySpark DataFrames.
 2. **Data Transformation**:
